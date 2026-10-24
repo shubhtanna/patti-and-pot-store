@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Page not found · Patti &amp; Pot{% endblock %}
+{% block content %}
+<section class="wrap thanks">
+  <h1 class="page">This page has steeped too long</h1>
+  <p class="lead">We couldn't find what you were looking for.</p>
+  <a class="btn" href="{% url 'home' %}">Back to the shop</a>
+</section>
+{% endblock %}

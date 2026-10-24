@@ -1,0 +1,10 @@
+{% load shop_extras %}
+<article class="card">
+  <a href="{{ p.get_absolute_url }}" class="card-link">
+    {% include "shop/_tin.html" with p=p %}
+    <h3>{{ p.name }}</h3>
+    <p class="meta">{% if p.region %}{{ p.region }}{% else %}{{ p.weight }}{% endif %}</p>
+  </a>
+  <p class="price"><strong>{{ p.price|rupees }}</strong>{% if p.percent_off %} <s>{{ p.mrp|rupees }}</s> <span class="off">{{ p.percent_off }}% off</span>{% endif %}</p>
+  {% if p.stock %}<a class="btn small" href="{{ p.get_absolute_url }}">View</a>{% else %}<span class="btn small disabled">Sold out</span>{% endif %}
+</article>

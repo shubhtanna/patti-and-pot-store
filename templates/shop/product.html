@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load shop_extras %}
+{% block title %}{{ p.name }} · Patti &amp; Pot{% endblock %}
+{% block description %}{{ p.description }}{% endblock %}
+{% block content %}
+<section class="wrap pdp">
+  <div class="pdp-art">{% include "shop/_tin.html" with p=p size="big" %}</div>
+  <div>
+    <p class="crumbs"><a href="{% url 'home' %}">Home</a> / <a href="{{ p.category.get_absolute_url }}">{{ p.category.name }}</a></p>
+    <h1>{{ p.name }}</h1>
+    {% if p.region %}<p class="region">{{ p.region }}</p>{% endif %}
+    <p class="price big"><strong>{{ p.price|rupees }}</strong>{% if p.percent_off %} <s>{{ p.mrp|rupees }}</s> <span class="off">{{ p.percent_off }}% off</span>{% endif %}</p>
+    <p class="muted small">{{ p.weight }} · inclusive of GST</p>
+    {% if p.stock %}
+      <p class="stock">{% if p.stock < 10 %}Only {{ p.stock }} left{% else %}In stock · ships tomorrow{% endif %}</p>
+      <form method="post" action="{% url 'cart_add' %}" class="buy">
+        {% csrf_token %}
+        <input type="hidden" name="sku" value="{{ p.sku }}">
+        <select name="qty" aria-label="Quantity">{% for n in qty_range %}<option value="{{ n }}">{{ n }}</option>{% endfor %}</select>
+        <button type="submit" class="btn">Add to cart</button>
+      </form>
+    {% else %}
+      <p class="stock out">Sold out · back soon</p>
+    {% endif %}
+    <p class="desc">{{ p.description }}</p>
+    {% if p.tasting_notes %}
+    <dl class="facts">
+      <div><dt>Tasting notes</dt><dd>{{ p.tasting_notes }}</dd></div>
+      <div><dt>How to brew</dt><dd>{{ p.brew }}</dd></div>
+    </dl>
+    {% endif %}
+  </div>
+</section>
+{% if related %}
+<section class="wrap">
+  <h2 class="sec">More from {{ p.category.name }}</h2>
+  <div class="grid">{% for r in related %}{% include "shop/_card.html" with p=r %}{% endfor %}</div>
+</section>
+{% endif %}
+{% endblock %}

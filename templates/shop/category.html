@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ category.name }} tea · Patti &amp; Pot{% endblock %}
+{% block description %}{{ category.blurb }}. Buy {{ category.name }} online from Patti & Pot.{% endblock %}
+{% block content %}
+<section class="wrap">
+  <p class="crumbs"><a href="{% url 'home' %}">Home</a> / {{ category.name }}</p>
+  <div class="head-row">
+    <div>
+      <h1 class="page">{{ category.name }}</h1>
+      <p class="muted">{{ category.blurb }} · {{ products|length }} item{{ products|length|pluralize }}</p>
+    </div>
+    <form method="get" class="sort">
+      <label>Sort
+        <select name="sort" onchange="this.form.submit()">
+          <option value="" {% if not sort %}selected{% endif %}>Featured</option>
+          <option value="price" {% if sort == 'price' %}selected{% endif %}>Price: low to high</option>
+          <option value="-price" {% if sort == '-price' %}selected{% endif %}>Price: high to low</option>
+        </select>
+      </label>
+      <noscript><button class="btn small">Apply</button></noscript>
+    </form>
+  </div>
+  <div class="grid">{% for p in products %}{% include "shop/_card.html" with p=p %}{% endfor %}</div>
+</section>
+{% endblock %}

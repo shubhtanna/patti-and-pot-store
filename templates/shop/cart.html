@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load shop_extras %}
+{% block title %}Your cart · Patti &amp; Pot{% endblock %}
+{% block content %}
+<section class="wrap">
+  <h1 class="page">Your cart</h1>
+  {% if cart.items %}
+  <div class="bag">
+    <div>
+      {% for i in cart.items %}
+      <div class="line">
+        <div class="mini">{% include "shop/_tin.html" with p=i.product size="mini" %}</div>
+        <div><a href="{{ i.product.get_absolute_url }}">{{ i.product.name }}</a><small>{{ i.product.weight }} · {{ i.product.price|rupees }} each</small></div>
+        <form method="post" action="{% url 'cart_update' %}" class="qty">
+          {% csrf_token %}<input type="hidden" name="sku" value="{{ i.product.sku }}">
+          <button name="qty" value="{{ i.qty|add:'-1' }}" aria-label="Fewer">−</button><span>{{ i.qty }}</span><button name="qty" value="{{ i.qty|add:'1' }}" aria-label="More">+</button>
+        </form>
+        <strong>{{ i.total|rupees }}</strong>
+        <form method="post" action="{% url 'cart_update' %}">{% csrf_token %}<input type="hidden" name="sku" value="{{ i.product.sku }}"><button name="qty" value="0" class="link">Remove</button></form>
+      </div>
+      {% endfor %}
+    </div>
+    <aside class="sum">
+      <p><span>Subtotal</span><span>{{ cart.subtotal|rupees }}</span></p>
+      <p><span>Delivery</span><span>{% if cart.delivery %}{{ cart.delivery|rupees }}{% else %}Free{% endif %}</span></p>
+      <p class="total"><span>Total</span><span>{{ cart.total|rupees }}</span></p>
+      {% if cart.delivery %}<p class="note">Add {{ cart.to_free|rupees }} more for free delivery.</p>{% endif %}
+      <a class="btn wide" href="{% url 'checkout' %}">Proceed to checkout</a>
+    </aside>
+  </div>
+  {% else %}
+  <p class="muted">Your cart is empty.</p>
+  <a class="btn" href="{% url 'category' 'assam' %}">Find a tea</a>
+  {% endif %}
+</section>
+{% endblock %}

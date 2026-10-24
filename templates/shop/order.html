@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load shop_extras %}
+{% block title %}Order placed · Patti &amp; Pot{% endblock %}
+{% block content %}
+<section class="wrap thanks">
+  <p class="eyebrow">Dhanyavaad!</p>
+  <h1 class="page">Your tea is on its way</h1>
+  <p class="lead">Order {{ order.number }} · {{ order.total|rupees }} · {{ order.get_payment_display }}</p>
+  <div class="sum receipt">
+    {% for i in order.items.all %}<p><span>{{ i.product.name }} × {{ i.qty }}</span><span>{{ i.price|rupees }}</span></p>{% endfor %}
+    <p><span>Delivery</span><span>{% if order.delivery %}{{ order.delivery|rupees }}{% else %}Free{% endif %}</span></p>
+  </div>
+  <p class="muted">We pack within 24 hours. Delivery in 3–6 days to {{ order.city }}.</p>
+  <a class="btn" href="{% url 'home' %}">Keep browsing</a>
+</section>
+{% endblock %}

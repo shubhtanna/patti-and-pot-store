@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <div class="wrap hero-in">
+    <div>
+      <p class="eyebrow">Estate-direct · Packed fresh in Pune</p>
+      <h1>Good tea starts <em>at the garden</em>.</h1>
+      <p class="lead">We buy straight from small estates in Assam, Darjeeling and the Nilgiris, and pack every order fresh. From your morning kadak chai to a delicate first flush.</p>
+      <a class="btn" href="{% url 'category' 'assam' %}">Shop Assam</a>
+      <a class="btn ghost" href="{% url 'category' 'darjeeling' %}">Shop Darjeeling</a>
+    </div>
+    <div class="hero-tins">
+      {% for p in featured|slice:":3" %}{% include "shop/_tin.html" with p=p size="hero" %}{% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2 class="sec">Shop by tea</h2>
+  <div class="cats">
+    {% for c in categories %}
+    <a class="cat" href="{{ c.get_absolute_url }}"><strong>{{ c.name }}</strong><span>{{ c.blurb }}</span></a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="wrap">
+  <h2 class="sec">Our customers' favourites</h2>
+  <div class="grid">{% for p in featured %}{% include "shop/_card.html" with p=p %}{% endfor %}</div>
+</section>
+
+<section class="wrap promise">
+  <div><strong>Packed fresh</strong><span>Every order is weighed and sealed the day it ships.</span></div>
+  <div><strong>Estate-direct</strong><span>Fair prices for growers, no middlemen.</span></div>
+  <div><strong>Free delivery</strong><span>On orders above ₹{{ free_from }}, anywhere in India.</span></div>
+</section>
+{% endblock %}
