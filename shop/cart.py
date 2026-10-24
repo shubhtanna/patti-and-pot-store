@@ -27,6 +27,21 @@ def set_qty(request, sku, qty):
     save_lines(request, lines)
 
 
+def load_from_items(request, items_param):
+    """Rebuild the cart from a shareable checkout link: sku:qty,sku:qty."""
+    lines = get_lines(request)
+    for part in items_param.split(","):
+        sku, _, qty = part.strip().partition(":")
+        try:
+            qty = int(qty)
+        except ValueError:
+            qty = 1
+        p = Product.objects.filter(sku=sku).first()
+        if p and qty > 0:
+            lines[p.sku] = min(MAX_QTY, p.stock, lines.get(p.sku, 0) + qty)
+    save_lines(request, lines)
+
+
 def summary(request):
     lines = get_lines(request)
     products = {p.sku: p for p in Product.objects.filter(sku__in=lines.keys())}

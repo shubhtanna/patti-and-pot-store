@@ -3,6 +3,7 @@
 {% block title %}{{ p.name }} · Patti &amp; Pot{% endblock %}
 {% block description %}{{ p.description }}{% endblock %}
 {% block content %}
+<script type="application/ld+json">{{ jsonld }}</script>
 <section class="wrap pdp">
   <div class="pdp-art">{% include "shop/_tin.html" with p=p size="big" %}</div>
   <div>

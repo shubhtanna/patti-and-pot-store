@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" role="img" aria-label="Darjeeling Everyday tin">
+  <rect width="200" height="240" fill="#f6f1e7"/>
+  <rect x="40" y="30" width="120" height="180" rx="10" fill="#3f7f6f"/>
+  <rect x="40" y="18" width="120" height="22" rx="8" fill="#d9c9a8"/>
+  <rect x="58" y="70" width="84" height="100" rx="6" fill="#f6f1e7" opacity="0.92"/>
+  <text x="100" y="105" text-anchor="middle" font-family="Georgia, serif" font-size="13" font-weight="bold" fill="#3a2a1a">Darjeeling Everyday</text>
+  <text x="100" y="128" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#6b543a">250 g</text>
+  <text x="100" y="152" text-anchor="middle" font-family="Georgia, serif" font-size="10" fill="#6b543a">Patti &amp; Pot</text>
+</svg>

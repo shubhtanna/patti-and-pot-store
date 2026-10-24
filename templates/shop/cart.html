@@ -25,7 +25,8 @@
       <p><span>Delivery</span><span>{% if cart.delivery %}{{ cart.delivery|rupees }}{% else %}Free{% endif %}</span></p>
       <p class="total"><span>Total</span><span>{{ cart.total|rupees }}</span></p>
       {% if cart.delivery %}<p class="note">Add {{ cart.to_free|rupees }} more for free delivery.</p>{% endif %}
-      <a class="btn wide" href="{% url 'checkout' %}">Proceed to checkout</a>
+      <a class="btn wide" href="{% url 'checkout' %}{% if cart.items %}?items={% for i in cart.items %}{{ i.product.sku }}:{{ i.qty }}{% if not forloop.last %},{% endif %}{% endfor %}{% endif %}">Proceed to checkout</a>
+      {% if cart.items %}<p class="note">Shareable checkout link: <code>/checkout/?items={% for i in cart.items %}{{ i.product.sku }}:{{ i.qty }}{% if not forloop.last %},{% endif %}{% endfor %}</code></p>{% endif %}
     </aside>
   </div>
   {% else %}

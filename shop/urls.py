@@ -15,4 +15,6 @@ urlpatterns = [
     path("about/", views.page, {"name": "about"}, name="about"),
     path("shipping/", views.page, {"name": "shipping"}, name="shipping"),
     path("robots.txt", views.robots, name="robots"),
+    path("sitemap.xml", views.sitemap, name="sitemap"),
+    path("llms.txt", views.llms, name="llms"),
 ]
