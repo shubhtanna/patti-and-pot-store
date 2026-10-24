@@ -1,14 +1,18 @@
+import json
 import secrets
 
 from django.contrib import messages
 from django.db import transaction
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
+from django.templatetags.static import static
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from . import cart
 from .models import Category, Order, OrderItem, Product
+from .templatetags.shop_extras import rupees
 
 
 def home(request):
@@ -32,7 +36,9 @@ def category(request, slug):
 def product(request, slug):
     p = get_object_or_404(Product.objects.select_related("category"), slug=slug)
     related = Product.objects.filter(category=p.category).exclude(pk=p.pk)[:4]
-    return render(request, "shop/product.html", {"p": p, "related": related, "qty_range": range(1, min(5, max(p.stock, 1)) + 1)})
+    jsonld = json.dumps(_product_jsonld(request, p)).replace("<", "\\u003c")
+    return render(request, "shop/product.html", {"p": p, "related": related, "jsonld": jsonld,
+                                                 "qty_range": range(1, min(5, max(p.stock, 1)) + 1)})
 
 
 def search(request):
@@ -47,10 +53,13 @@ def cart_add(request):
     if p.stock == 0:
         messages.error(request, f"Sorry, {p.name} is out of stock.")
         return redirect(p)
-    qty = max(1, int(request.POST.get("qty") or 1))
+    try:
+        qty = max(1, int(request.POST.get("qty") or 1))
+    except ValueError:
+        qty = 1
     cart.add(request, p, qty)
     messages.success(request, f"Added {p.name} to your cart.")
-    return redirect("cart")
+    return HttpResponseRedirect(request.headers.get("Referer") or reverse("cart"))
 
 
 @require_POST
@@ -67,6 +76,12 @@ FIELDS = ("name", "phone", "email", "address", "city", "pincode", "payment")
 
 
 def checkout(request):
+    # A shareable checkout link (?items=sku:qty,sku:qty) rebuilds the cart without cookies,
+    # so the link an agent hands the shopper opens the same items on any device.
+    items_param = request.GET.get("items", "")
+    if items_param:
+        cart.load_from_items(request, items_param)
+        return redirect("checkout")
     summary = cart.summary(request)
     if not summary["items"]:
         return redirect("cart")
@@ -115,15 +130,67 @@ def page(request, name):
 def robots(request):
     lines = [
         "# Patti & Pot",
-        "# Product pages blocked after competitors scraped our prices (March 2025).",
+        "# Estate-direct teas from Assam, Darjeeling and the Nilgiris, packed fresh in Pune.",
         "User-agent: *",
-        "Disallow: /tea/",
         "Disallow: /cart/",
         "Disallow: /checkout/",
         "Disallow: /order/",
         "Allow: /",
+        "Sitemap: /sitemap.xml",
     ]
     return HttpResponse("\n".join(lines) + "\n", content_type="text/plain")
+
+
+def _product_jsonld(request, p):
+    return {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": p.name,
+        "description": p.description,
+        "image": request.build_absolute_uri(static(f"img/tins/{p.slug}.svg")),
+        "sku": p.sku,
+        "url": request.build_absolute_uri(p.get_absolute_url()),
+        "offers": {
+            "@type": "Offer",
+            "price": str(p.price),
+            "priceCurrency": "INR",
+            "availability": "https://schema.org/InStock" if p.stock else "https://schema.org/OutOfStock",
+            "url": request.build_absolute_uri(p.get_absolute_url()),
+        },
+    }
+
+
+def sitemap(request):
+    urls = [request.build_absolute_uri(reverse("home"))]
+    urls += [request.build_absolute_uri(c.get_absolute_url()) for c in Category.objects.all()]
+    urls += [request.build_absolute_uri(p.get_absolute_url()) for p in Product.objects.all()]
+    xml = ['<?xml version="1.0" encoding="UTF-8"?>',
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    xml += [f"<url><loc>{u}</loc></url>" for u in urls]
+    xml.append("</urlset>")
+    return HttpResponse("\n".join(xml) + "\n", content_type="application/xml")
+
+
+def llms(request):
+    lines = [
+        "# Patti & Pot",
+        "Estate-direct Assam, Darjeeling and Nilgiri teas, masala chai blends and teaware,",
+        "packed fresh in Pune and shipped across India.",
+        "",
+        "## Products",
+    ]
+    for p in Product.objects.all():
+        lines.append(f"- [{p.name}]({p.get_absolute_url()}): {rupees(p.price)}")
+    lines += [
+        "",
+        "## How to buy",
+        "1. Open a product page and submit its Add to cart form (a plain HTML form; no JavaScript needed).",
+        "2. Review the items at /cart/.",
+        "3. Send the shopper the checkout link shown on the cart page, e.g. /checkout/?items=SKU:QTY,SKU:QTY.",
+        "   It opens the same items on any device, no cookies required.",
+        "4. The shopper fills in delivery details and pays by cash on delivery or UPI on delivery.",
+    ]
+    return HttpResponse("\n".join(lines) + "\n", content_type="text/markdown")
 
 
 def not_found(request, exception=None):
